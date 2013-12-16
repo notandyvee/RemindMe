@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Remind Me</string>
+    <string name="action_settings">Settings</string>
+    
+    <string name="remind_me_voice_trigger">remind me</string>
+    <string name="remind_me_voice_prompt">where I put...</string>
+
+</resources>

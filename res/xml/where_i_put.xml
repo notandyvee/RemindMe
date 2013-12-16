@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<trigger keyword="@string/remind_me_voice_trigger">
+    <input prompt="@string/remind_me_voice_prompt" />
+</trigger>
