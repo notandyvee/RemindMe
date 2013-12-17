@@ -2,13 +2,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity" >
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Testing Live Cards" />
-
+    android:id="@+id/reminder_card_holder" >
+    
+    <ImageView
+    	android:id="@+id/image_to_remember"
+    	android:layout_width="match_parent"
+    	android:layout_height="match_parent"
+    	/>
+    
+	<!-- Currently this file will simply be used to hold a card to be able to update it after
+	a photo is taken.-->
 
 
 
