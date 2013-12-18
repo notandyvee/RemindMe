@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import com.google.android.glass.app.Card;
+import com.google.android.glass.media.CameraManager;
 import com.google.android.glass.timeline.LiveCard;
 import com.google.android.glass.timeline.TimelineManager;
 
@@ -44,6 +45,7 @@ public class MainActivity extends Activity {
 	String timeStamp;
 	
 	FileObserver observer;
+	private String finalPhotoPath;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +57,7 @@ public class MainActivity extends Activity {
 		ArrayList<String> voiceResults = getIntent().getExtras()
 		        .getStringArrayList(RecognizerIntent.EXTRA_RESULTS);
 		rememberItem = voiceResults.get(0);
-		
+
 		fireReminderPicture();
 		/*
 		 * Binding to a service. Ideally I should probably do this when
@@ -73,28 +75,43 @@ public class MainActivity extends Activity {
 		if(resultCode == RESULT_OK) {
 			
 			if(requestCode == RUN_CAMERA) {
-				
-	            Log.d(TAG, "Image saved to: "+data.getData());
-				
-				//Log.d(TAG, data.getExtras().get("data"));
-				
-//				sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED,
-//                        Uri.parse("file://" + baseDir+rememberItem+".jpg")));
-	            File mediaStorageDir = getBaseAppDir();
-				File photo = new File(mediaStorageDir.getPath() + File.separator +
-				        "REMIND_ME_IMG_"+ timeStamp + ".jpg");
-				Log.d(TAG, photo.getAbsolutePath());
-				Log.d(TAG, "Does file exists: "+photo.exists());
-				observer = new FileObserver(photo.getAbsolutePath()) { 
+				Log.d(TAG, "Running oResult");
+	            String filePath = data.getStringExtra(CameraManager.EXTRA_PICTURE_FILE_PATH);
+	            finalPhotoPath = filePath;
+	            Log.d(TAG, "Le file path: "+filePath);
+	            filePath = filePath.substring(0, filePath.lastIndexOf("/"));
+	            Log.d(TAG, "Parent file: "+filePath);
+
+				File leFile = new File(filePath);
+				if(leFile.exists()){
+					Log.d(TAG, "New file exists!");
+				}
+				else {
+					Log.d(TAG, "New file does not exist");
+				}
+				observer = new FileObserver(filePath) { 
 					// set up a file observer to watch this directory on sd card
 				     @Override
 				     public void onEvent(int event, String file) {
-				         Log.d(TAG, "File created [" + file + "]");
-
+				        Log.d(TAG, "File created [" + file + "]");
+				        if(file != null) {
+					        Uri uri = Uri.fromFile(new File(finalPhotoPath));
+					         
+							final Card card = new Card(MainActivity.this);
+							card.setText(rememberItem);
+							card.addImage(uri);
+							cardParent.post(new Runnable(){
+								@Override
+								public void run() {
+									cardParent.addView(card.toView());
+								}							
+							});
+					         
+					         this.stopWatching();
+				        }
 				     }
 				 };
 				 observer.startWatching(); //START OBSERVING
-				
 //					Card card = new Card(this);
 //					card.setText(rememberItem);
 //					Uri uri = Uri.fromFile(photo);
@@ -113,17 +130,13 @@ public class MainActivity extends Activity {
 	
 	private void fireReminderPicture() {
 		
-		File createdMediaFile = getMediaFile();
-		
+		File createdMediaFile = getMediaFile();		
 		if(createdMediaFile == null) {
 			Log.d(TAG, "Failed to create le file.");
 			return;
-		}
-		
+		}		
 		Uri outputFileUri = Uri.fromFile(createdMediaFile);
-        Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE); 
-        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
-        
+        Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);      
         startActivityForResult(cameraIntent, RUN_CAMERA);
 		
 	}//end of fireReminderPicture
