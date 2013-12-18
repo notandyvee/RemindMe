@@ -2,7 +2,9 @@ package com.remindme;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import com.google.android.glass.app.Card;
 import com.google.android.glass.timeline.LiveCard;
@@ -29,7 +31,7 @@ public class MainActivity extends Activity {
 	
 	private static final String TAG = "MainActivity";
 	private static final int RUN_CAMERA = 0;
-	
+	private final String appPhotoDirName = "RemindMe";
 	/*Service stuff is currently not used but will be in order to facilitate
 	 * Live card interaction whenever this functionality is requested.*/
 	private boolean mBound = false;
@@ -39,7 +41,7 @@ public class MainActivity extends Activity {
 	private RelativeLayout cardParent;
 	private ImageView mImageView;
 	private String rememberItem;
-	private String baseDir;
+	String timeStamp;
 	
 	FileObserver observer;
 	
@@ -53,8 +55,6 @@ public class MainActivity extends Activity {
 		ArrayList<String> voiceResults = getIntent().getExtras()
 		        .getStringArrayList(RecognizerIntent.EXTRA_RESULTS);
 		rememberItem = voiceResults.get(0);
-		
-		baseDir = setBaseDir();
 		
 		fireReminderPicture();
 		/*
@@ -74,16 +74,19 @@ public class MainActivity extends Activity {
 			
 			if(requestCode == RUN_CAMERA) {
 				
+	            Log.d(TAG, "Image saved to: "+data.getData());
+				
 				//Log.d(TAG, data.getExtras().get("data"));
 				
-				sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED,
-                        Uri.parse("file://" + baseDir+rememberItem+".jpg")));
-				File photo = new File(baseDir+rememberItem+".jpg");
-				if(photo.isFile()) {
-					Log.d(TAG, "Successfully created file.");
-				}
-				
-				observer = new FileObserver(photo.getAbsolutePath()) { // set up a file observer to watch this directory on sd card
+//				sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED,
+//                        Uri.parse("file://" + baseDir+rememberItem+".jpg")));
+	            File mediaStorageDir = getBaseAppDir();
+				File photo = new File(mediaStorageDir.getPath() + File.separator +
+				        "REMIND_ME_IMG_"+ timeStamp + ".jpg");
+				Log.d(TAG, photo.getAbsolutePath());
+				Log.d(TAG, "Does file exists: "+photo.exists());
+				observer = new FileObserver(photo.getAbsolutePath()) { 
+					// set up a file observer to watch this directory on sd card
 				     @Override
 				     public void onEvent(int event, String file) {
 				         Log.d(TAG, "File created [" + file + "]");
@@ -92,16 +95,11 @@ public class MainActivity extends Activity {
 				 };
 				 observer.startWatching(); //START OBSERVING
 				
-
-//			    Bundle extras = data.getExtras();
-//			    Bitmap mImageBitmap = (Bitmap) extras.get("data");
-//			    mImageView.setImageBitmap(mImageBitmap);
-				
-					Card card = new Card(this);
-					card.setText(rememberItem);
-					Uri uri = Uri.fromFile(photo);
-					//card.addImage(uri);
-					cardParent.addView(card.toView());
+//					Card card = new Card(this);
+//					card.setText(rememberItem);
+//					Uri uri = Uri.fromFile(photo);
+//					//card.addImage(uri);
+//					cardParent.addView(card.toView());
 				
 			}			
 			
@@ -115,18 +113,14 @@ public class MainActivity extends Activity {
 	
 	private void fireReminderPicture() {
 		
-		String file = baseDir+rememberItem+".jpg";
-		File newPhoto = new File(file);
-		try {
-			boolean result = newPhoto.createNewFile();
-			if(!result)
-				Log.d(TAG, "File was not created to to either an error or already exists.");
-		}
-		catch (IOException e) {
-			Log.d(TAG, "IOException when creating file.");
+		File createdMediaFile = getMediaFile();
+		
+		if(createdMediaFile == null) {
+			Log.d(TAG, "Failed to create le file.");
+			return;
 		}
 		
-		Uri outputFileUri = Uri.fromFile(newPhoto);
+		Uri outputFileUri = Uri.fromFile(createdMediaFile);
         Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE); 
         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
         
@@ -134,20 +128,33 @@ public class MainActivity extends Activity {
 		
 	}//end of fireReminderPicture
 
-	private String setBaseDir() {
-        String dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/RemindMe/"; 
-        Log.d(TAG, "Directory name is: "+dir);
-        File newdir = new File(dir); 
-        boolean result = newdir.mkdirs();
-//		if(newdir.isDirectory())
-//			Log.d(TAG, "Tis a directory");
-        if(result)
-        	Log.d(TAG, "Successfully created this directory!");
-        else
-        	Log.d(TAG, "Either this directory already exists or it failed...");
+	private File getMediaFile() { 
+        File mediaStorageDir = getBaseAppDir();
+        Log.d(TAG, "Directory name is: "+mediaStorageDir.getAbsolutePath()); 
         
-        return dir;
-	}
+        // Create the storage directory if it does not exist
+        if (! mediaStorageDir.exists()){
+            if (! mediaStorageDir.mkdirs()){
+                Log.d("MyCameraApp", "failed to create directory");
+                return null;
+            }
+        }
+        
+        // Create a media file name
+        timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        File mediaFile;
+        mediaFile = new File(mediaStorageDir.getPath() + File.separator +
+        "REMIND_ME_IMG_"+ timeStamp + ".jpg");
+        
+        return mediaFile;
+	}//end of getMediaFile
+	
+	private File getBaseAppDir() {
+        File mediaStorageDir = new File(
+        		Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), appPhotoDirName
+        		);
+        return mediaStorageDir;
+	}//end of getBaseAppDir
 
 	@Override
 	protected void onDestroy() {
