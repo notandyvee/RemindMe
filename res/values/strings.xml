@@ -7,6 +7,6 @@
     
     <string name="remind_me_voice_trigger">remember</string>
     <string name="remind_me_voice_prompt">where I put...</string>
-	<string name="remind_me_where_voice_trigger">where did i</string>
+	<string name="remind_me_where_voice_trigger">recall</string>
 	<string name="remind_me_where_voice_prompt">place my...</string>
 </resources>

@@ -43,15 +43,18 @@ public class ShowReminderActivity extends Activity{
 		
 		//TODO: Get Image path and resize.
 		String imagePath = db.getItemImagePath(rememberItem);
-		
+		if(imagePath == null) {
+			text.setText("Could not find any items matching that description.");
+		} else {
 //		card.setText(rememberItem +"\n" +"Image Path is: "+imagePath);
 		
-		//TODO: set resized image here
-		Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
-		bitmap = getResizedBitmap(bitmap, 480);
-		image.setImageBitmap(bitmap);
-		
-		text.setText(rememberItem);
+			Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
+			bitmap = getResizedBitmap(bitmap, 640);
+			image.setImageBitmap(bitmap);
+			
+	
+			text.setText(rememberItem);
+		}
 		//Finally set remembered item to the screen
 //		RelativeLayout parent = (RelativeLayout)findViewById(R.id.show_reminder_card_holder);
 //		parent.addView(card.toView());

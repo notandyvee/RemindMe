@@ -53,8 +53,10 @@ public class RemindMeDatabase {
 	
 	public String getItemImagePath(String itemRemember) {
 		Cursor resultQuery = database.query(THINGS, new String[] {"thing_to_remember", "photo_path"},
-				"thing_to_remember = ?", new String[] {itemRemember}, null, null, null);
+				"thing_to_remember MATCH ?", new String[] {itemRemember}, null, null, null);
 		//Should really either be 1 or 0 in size. Will worry about getting a larger set if other similar items exist.
+//		Cursor resultQuery = database.rawQuery("SELECT * FROM things WHERE thing_to_remember MATCH ?", new String[]{"'"+itemRemember+"'"});
+		//Log.d("Test", msg)
 		if(resultQuery.getCount() == 1) {
 			resultQuery.moveToFirst();
 			String path = resultQuery.getString(1);

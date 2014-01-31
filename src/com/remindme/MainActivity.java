@@ -30,7 +30,7 @@ public class MainActivity extends Activity {
 		mImageView = (ImageView)findViewById(R.id.image_to_remember);
 		ArrayList<String> voiceResults = getIntent().getExtras()
 		        .getStringArrayList(RecognizerIntent.EXTRA_RESULTS);
-		rememberItem = voiceResults.get(0); 
+		rememberItem = voiceResults.get(0);
 		
 		fireReminderPicture();
 		/*
