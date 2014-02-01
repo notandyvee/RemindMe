@@ -55,9 +55,9 @@ public class RemindMeDatabase {
 		Cursor resultQuery = database.query(THINGS, new String[] {"thing_to_remember", "photo_path"},
 				"thing_to_remember MATCH ?", new String[] {itemRemember}, null, null, null);
 		//Should really either be 1 or 0 in size. Will worry about getting a larger set if other similar items exist.
-//		Cursor resultQuery = database.rawQuery("SELECT * FROM things WHERE thing_to_remember MATCH ?", new String[]{"'"+itemRemember+"'"});
-		//Log.d("Test", msg)
-		if(resultQuery.getCount() == 1) {
+		//Cursor resultQuery = database.rawQuery("SELECT * FROM things WHERE thing_to_remember MATCH ?", new String[]{"'"+itemRemember+"'"});
+		Log.d("Test", resultQuery.getCount() + " " + resultQuery.toString());
+		if(resultQuery.getCount() > 0) {
 			resultQuery.moveToFirst();
 			String path = resultQuery.getString(1);
 			return path;
@@ -83,7 +83,7 @@ public class RemindMeDatabase {
 		@Override
 		public void onCreate(SQLiteDatabase db) {
 			String thingsToRemember = 
-					"CREATE TABLE things (_id INTEGER PRIMARY KEY," +
+					"CREATE VIRTUAL TABLE things USING fts4(_id INTEGER PRIMARY KEY," +
 					"thing_to_remember text, photo_path text)";
 			db.execSQL(thingsToRemember);
 		}
