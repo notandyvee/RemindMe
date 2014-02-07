@@ -4,6 +4,8 @@ import java.io.File;
 
 import android.app.Service;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.os.Binder;
 import android.os.FileObserver;
 import android.os.IBinder;
@@ -60,6 +62,8 @@ public class TestService extends Service{
 		     public void onEvent(int event, String file) {
 		    	 try {
 			        if(file != null && saved == false) {
+			        	
+			        	//Convert here 
 			        	saved = true;
 			        	RemindMeDatabase db = new RemindMeDatabase(TestService.this);
 			        	db.addReminder(itemRemember, finalPhotoPath);
@@ -87,7 +91,27 @@ public class TestService extends Service{
 	}//end of onDestroy
 	
 	
+	private Bitmap getResizedBitmap(Bitmap bm, int newWidth) {
+
+        int width = bm.getWidth();
+        int height = bm.getHeight();
+
+	    float aspect = (float)width / height;	
+	    float scaleWidth = newWidth;
+	    float scaleHeight = scaleWidth / aspect;
 	
+	    // create a matrix for the manipulation
+	    Matrix matrix = new Matrix();
+	
+	    // resize the bit map	
+	    matrix.postScale(scaleWidth / width, scaleHeight / height);
+	
+	    // recreate the new Bitmap	
+	    Bitmap resizedBitmap = Bitmap.createBitmap(bm, 0, 0, width, height, matrix, true);	
+	    bm.recycle();
+	
+	    return resizedBitmap;
+    }
 	
 	
 	

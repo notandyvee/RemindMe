@@ -1,6 +1,7 @@
 package com.remindme;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +11,7 @@ import com.google.android.glass.widget.CardScrollAdapter;
 import com.google.android.glass.widget.CardScrollView;
 
 import android.app.Activity;
-import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -19,15 +20,11 @@ import android.os.Bundle;
 import android.provider.MediaStore.Images;
 import android.speech.RecognizerIntent;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 public class ShowReminderActivity extends Activity{
 	
@@ -51,7 +48,7 @@ public class ShowReminderActivity extends Activity{
 				
 				
 				setContentView(R.layout.show_reminder);
-				ImageView image = (ImageView)findViewById(R.id.item_image);
+				//ImageView image = (ImageView)findViewById(R.id.item_image);
 				
 				
 			
@@ -67,10 +64,18 @@ public class ShowReminderActivity extends Activity{
 				String path = Images.Media.insertImage(this.getContentResolver(), bitmap, "title", null);
 				Uri uri = Uri.parse(path);
 				//image.setImageBitmap(bitmap);
+				if (uri.getScheme().equals("content")) {
+					Cursor cursor = this.getContentResolver().query(uri, new String [] {android.provider.MediaStore.Images.ImageColumns.DATA}, null, null, null);
+					cursor.moveToFirst();
+					path = cursor.getString(0);
+					uri = Uri.fromFile(new File(path));
+				}
 				
-		
 				card.setFootnote(rememberItem);
-				Log.d("SHOW", "73 " + uri.getPath());
+				Log.d("SHOW", "80 " + path);
+				Log.d("SHOW", "81 " + uri.toString());
+				Log.d("SHOW", "82 " + uri.getPath());
+				
 				card.setImageLayout(ImageLayout.FULL);
 				card.addImage(uri);
 				

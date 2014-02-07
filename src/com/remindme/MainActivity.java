@@ -7,6 +7,7 @@ import com.google.android.glass.timeline.TimelineManager;
 
 import android.os.Bundle;
 import android.os.FileObserver;
+import android.provider.MediaStore;
 import android.app.Activity;
 import android.content.Intent;
 import android.speech.RecognizerIntent;
@@ -62,13 +63,18 @@ public class MainActivity extends Activity {
 				intent.putExtra("remember_item", rememberItem);
 				startService(intent);
 				
-			
+				
 				Card card = new Card(this);
 				card.setText("Remembering: "+rememberItem);
 				card.setImageLayout(Card.ImageLayout.FULL);
-				cardParent.addView(card.toView());
+				//WE NEED THE DAMN IMAGE
+				setContentView(card.toView());
 				TimelineManager tm = TimelineManager.from(this);
 				tm.insert(card);
+				
+				
+				
+				
 			}			
 			
 		}//end of check for RESULT_OK
@@ -80,7 +86,7 @@ public class MainActivity extends Activity {
 	}//end of onActivityResult
 	
 	private void fireReminderPicture() {
-        Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);      
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);      
         startActivityForResult(cameraIntent, RUN_CAMERA);
 		
 	}//end of fireReminderPicture
@@ -95,7 +101,6 @@ public class MainActivity extends Activity {
 		//unbindService(mConnection);
 		
 	}
-
 
 
 
