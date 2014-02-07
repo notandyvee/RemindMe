@@ -3,6 +3,8 @@ package com.remindme;
 import java.util.ArrayList;
 import com.google.android.glass.app.Card;
 import com.google.android.glass.media.CameraManager;
+import com.google.android.glass.timeline.TimelineManager;
+
 import android.os.Bundle;
 import android.os.FileObserver;
 import android.app.Activity;
@@ -50,7 +52,7 @@ public class MainActivity extends Activity {
 			
 			if(requestCode == RUN_CAMERA) {
 				RemindMeDatabase db = new RemindMeDatabase(this);
-				db.deleteItems();
+				//db.deleteItems();
 				db.closeDatabase();
 				
 				String filePath = data.getStringExtra(CameraManager.EXTRA_PICTURE_FILE_PATH);
@@ -62,8 +64,11 @@ public class MainActivity extends Activity {
 				
 			
 				Card card = new Card(this);
-				card.setText("Reminding you where you put your: "+rememberItem);
+				card.setText("Remembering: "+rememberItem);
+				card.setImageLayout(Card.ImageLayout.FULL);
 				cardParent.addView(card.toView());
+				TimelineManager tm = TimelineManager.from(this);
+				tm.insert(card);
 			}			
 			
 		}//end of check for RESULT_OK
