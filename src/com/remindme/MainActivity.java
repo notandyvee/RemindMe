@@ -1,6 +1,9 @@
 package com.remindme;
 
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import com.google.android.glass.app.Card;
 import com.google.android.glass.media.CameraManager;
 import com.google.android.glass.timeline.TimelineManager;
@@ -23,6 +26,7 @@ public class MainActivity extends Activity {
 	private ImageView mImageView;
 	private String rememberItem;	
 	FileObserver observer;
+	private Timer timer;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -66,13 +70,21 @@ public class MainActivity extends Activity {
 				
 				Card card = new Card(this);
 				card.setText("Remembering: "+rememberItem);
-				card.setImageLayout(Card.ImageLayout.FULL);
+				//card.setImageLayout(Card.ImageLayout.FULL);
 				//WE NEED THE DAMN IMAGE
 				setContentView(card.toView());
-				TimelineManager tm = TimelineManager.from(this);
-				tm.insert(card);
+//				TimelineManager tm = TimelineManager.from(this);
+//				tm.insert(card);
 				
-				
+				timer = new Timer();
+				timer.schedule(new TimerTask() {
+					
+					@Override
+					public void run() {
+						MainActivity.this.finish();
+						
+					}
+				}, 5000);
 				
 				
 			}			
