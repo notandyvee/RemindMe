@@ -1,10 +1,16 @@
 package com.remindme;
 
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import com.google.android.glass.app.Card;
 import com.google.android.glass.media.CameraManager;
+import com.google.android.glass.timeline.TimelineManager;
+
 import android.os.Bundle;
 import android.os.FileObserver;
+import android.provider.MediaStore;
 import android.app.Activity;
 import android.content.Intent;
 import android.speech.RecognizerIntent;
@@ -20,6 +26,7 @@ public class MainActivity extends Activity {
 	private ImageView mImageView;
 	private String rememberItem;	
 	FileObserver observer;
+	private Timer timer;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +57,7 @@ public class MainActivity extends Activity {
 			
 			if(requestCode == RUN_CAMERA) {
 				RemindMeDatabase db = new RemindMeDatabase(this);
-				db.deleteItems();
+				//db.deleteItems();
 				db.closeDatabase();
 				
 				String filePath = data.getStringExtra(CameraManager.EXTRA_PICTURE_FILE_PATH);
@@ -60,10 +67,26 @@ public class MainActivity extends Activity {
 				intent.putExtra("remember_item", rememberItem);
 				startService(intent);
 				
-			
+				
 				Card card = new Card(this);
-				card.setText("Reminding you where you put your: "+rememberItem);
-				cardParent.addView(card.toView());
+				card.setText("Remembering: "+rememberItem);
+				//card.setImageLayout(Card.ImageLayout.FULL);
+				//WE NEED THE DAMN IMAGE
+				setContentView(card.toView());
+//				TimelineManager tm = TimelineManager.from(this);
+//				tm.insert(card);
+				
+				timer = new Timer();
+				timer.schedule(new TimerTask() {
+					
+					@Override
+					public void run() {
+						MainActivity.this.finish();
+						
+					}
+				}, 5000);
+				
+				
 			}			
 			
 		}//end of check for RESULT_OK
@@ -75,7 +98,7 @@ public class MainActivity extends Activity {
 	}//end of onActivityResult
 	
 	private void fireReminderPicture() {
-        Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);      
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);      
         startActivityForResult(cameraIntent, RUN_CAMERA);
 		
 	}//end of fireReminderPicture
@@ -90,7 +113,6 @@ public class MainActivity extends Activity {
 		//unbindService(mConnection);
 		
 	}
-
 
 
 

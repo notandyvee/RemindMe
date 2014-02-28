@@ -1,12 +1,23 @@
 package com.remindme;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+
+import com.google.android.glass.app.Card;
+import com.google.android.glass.app.Card.ImageLayout;
+import com.google.android.glass.timeline.TimelineManager;
 
 import android.app.Service;
 import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.net.Uri;
 import android.os.Binder;
 import android.os.FileObserver;
 import android.os.IBinder;
+import android.provider.MediaStore.Images;
 import android.util.Log;
 
 public class TestService extends Service{
@@ -40,13 +51,15 @@ public class TestService extends Service{
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		Log.d(TAG, "Running onStartCommand");
+		
 		final String itemRemember = intent.getStringExtra("remember_item");
         String filePath = intent.getStringExtra("pic_file_path");
         
         finalPhotoPath = filePath;
         filePath = filePath.substring(0, filePath.lastIndexOf("/"));
-
+        
 		File leFile = new File(filePath);
+		
 		if(leFile.exists()){
 			Log.d(TAG, "New file exists!");
 		}
@@ -60,11 +73,37 @@ public class TestService extends Service{
 		     public void onEvent(int event, String file) {
 		    	 try {
 			        if(file != null && saved == false) {
+						
+			        	//Convert here 
 			        	saved = true;
 			        	RemindMeDatabase db = new RemindMeDatabase(TestService.this);
 			        	db.addReminder(itemRemember, finalPhotoPath);
 			        	Log.d(TAG, "Added item to database successfully. \nItem: "+itemRemember+"\n PhotoPath: "+finalPhotoPath);
+			        	
+
+			        	Bitmap bitmap = BitmapFactory.decodeFile(finalPhotoPath);
+						bitmap = getResizedBitmap(bitmap, 640);
+						ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+						bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+						String path = Images.Media.insertImage(getContentResolver(), bitmap, "title", null);
+						Uri uri = Uri.parse(path);
+						//image.setImageBitmap(bitmap);
+						if (uri.getScheme().equals("content")) {
+							Cursor cursor = getContentResolver().query(uri, new String [] {android.provider.MediaStore.Images.ImageColumns.DATA}, null, null, null);
+							cursor.moveToFirst();
+							finalPhotoPath = cursor.getString(0);
+							uri = Uri.fromFile(new File(path));
+						}
+			        	
+			        	TimelineManager tm = TimelineManager.from(getApplicationContext());
+			        	Card card = new Card(getApplicationContext());
+			        	card.setText(itemRemember);
+			        	card.setImageLayout(ImageLayout.FULL);
+			        	card.addImage(uri);
+			        	tm.insert(card);
+			        	
 			        	db.closeDatabase();
+			        	Log.d("SERVICE", "this.stopWatching()");
 			        	this.stopWatching();
 
 			        }
@@ -83,11 +122,32 @@ public class TestService extends Service{
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		Log.d("SERVICE", "onDestroy");
 		stopSelf();
 	}//end of onDestroy
 	
 	
+	private Bitmap getResizedBitmap(Bitmap bm, int newWidth) {
+
+        int width = bm.getWidth();
+        int height = bm.getHeight();
+
+	    float aspect = (float)width / height;	
+	    float scaleWidth = newWidth;
+	    float scaleHeight = scaleWidth / aspect;
 	
+	    // create a matrix for the manipulation
+	    Matrix matrix = new Matrix();
+	
+	    // resize the bit map	
+	    matrix.postScale(scaleWidth / width, scaleHeight / height);
+	
+	    // recreate the new Bitmap	
+	    Bitmap resizedBitmap = Bitmap.createBitmap(bm, 0, 0, width, height, matrix, true);	
+	    bm.recycle();
+	
+	    return resizedBitmap;
+    }
 	
 	
 	
