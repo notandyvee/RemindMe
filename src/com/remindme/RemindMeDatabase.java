@@ -92,6 +92,19 @@ public class RemindMeDatabase {
 		return null;
 	}
 	
+	public String getSingleItemImagePath(String itemToRemember) {
+		
+		Cursor resultQuery = database.query(THINGS, new String[] {"thing_to_remember", "photo_path"},
+				"thing_to_remember MATCH ?", new String[] {"'" + itemToRemember + "'"}, null, null, null);
+		
+		if(resultQuery.getCount() > 0 && resultQuery.getCount() == 1) {
+			resultQuery.moveToFirst();
+			return resultQuery.getString(1);
+		}
+		
+		return null;
+	}
+	
 	
 	
 	/**

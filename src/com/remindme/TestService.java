@@ -77,7 +77,7 @@ public class TestService extends Service{
 			        	//Convert here 
 			        	saved = true;
 			        	RemindMeDatabase db = new RemindMeDatabase(TestService.this);
-			        	db.addReminder(itemRemember, finalPhotoPath);
+			        	
 			        	Log.d(TAG, "Added item to database successfully. \nItem: "+itemRemember+"\n PhotoPath: "+finalPhotoPath);
 			        	
 
@@ -85,15 +85,24 @@ public class TestService extends Service{
 						bitmap = getResizedBitmap(bitmap, 640);
 						ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 						bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-						String path = Images.Media.insertImage(getContentResolver(), bitmap, "title", null);
+						String path = Images.Media.insertImage(getContentResolver(), bitmap, "title", "Photo of item to remember.");
+
 						Uri uri = Uri.parse(path);
-						//image.setImageBitmap(bitmap);
 						if (uri.getScheme().equals("content")) {
 							Cursor cursor = getContentResolver().query(uri, new String [] {android.provider.MediaStore.Images.ImageColumns.DATA}, null, null, null);
 							cursor.moveToFirst();
 							finalPhotoPath = cursor.getString(0);
-							uri = Uri.fromFile(new File(path));
+							uri = Uri.fromFile(new File(finalPhotoPath));
+							cursor.close();
 						}
+						Log.d(TAG, "Final photo path after resize and save: "+finalPhotoPath);
+						/*
+						 * WARNING:
+						 * 
+						 * The original image is currently being lost. Too lazy to upgrade database.
+						 * Restore glass and make sure to update the code to save both original image
+						 * and resized image.*/
+						db.addReminder(itemRemember, finalPhotoPath);
 			        	
 			        	TimelineManager tm = TimelineManager.from(getApplicationContext());
 			        	Card card = new Card(getApplicationContext());
@@ -105,7 +114,7 @@ public class TestService extends Service{
 			        	db.closeDatabase();
 			        	Log.d("SERVICE", "this.stopWatching()");
 			        	this.stopWatching();
-
+			        	stopSelf();
 			        }
 		        }
 		    	 catch (Exception e) {
@@ -122,11 +131,13 @@ public class TestService extends Service{
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		Log.d("SERVICE", "onDestroy");
-		stopSelf();
 	}//end of onDestroy
 	
 	
+	/*
+	 * Method that returns a resized bitmap so our glas app can use it for
+	 * displaying.
+	 * */
 	private Bitmap getResizedBitmap(Bitmap bm, int newWidth) {
 
         int width = bm.getWidth();

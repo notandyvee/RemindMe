@@ -71,10 +71,12 @@ public class MainActivity extends Activity {
 				Card card = new Card(this);
 				card.setText("Remembering: "+rememberItem);
 				//card.setImageLayout(Card.ImageLayout.FULL);
-				//WE NEED THE DAMN IMAGE
+
 				setContentView(card.toView());
-//				TimelineManager tm = TimelineManager.from(this);
-//				tm.insert(card);
+				
+				// Unfortunately there is no way to reliably assume we can access the image
+				// right after the photo is taken. This will be done by the service.
+
 				
 				timer = new Timer();
 				timer.schedule(new TimerTask() {
