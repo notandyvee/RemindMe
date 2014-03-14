@@ -1,7 +1,6 @@
 package com.remindme;
 
 import java.util.ArrayList;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -16,6 +15,7 @@ import android.util.Log;
  */
 public class RemindMeDatabase {
 
+	private static final String TAG = "RemindMeDatabase";
 	private String DB_NAME = "memories.db";
 	private int DB_VERSION = 1;
 	private RemindMeOpenHelper openHelper;
@@ -97,12 +97,50 @@ public class RemindMeDatabase {
 		Cursor resultQuery = database.query(THINGS, new String[] {"thing_to_remember", "photo_path"},
 				"thing_to_remember MATCH ?", new String[] {"'" + itemToRemember + "'"}, null, null, null);
 		
-		if(resultQuery.getCount() > 0 && resultQuery.getCount() == 1) {
+		if(resultQuery.getCount() == 1) {
 			resultQuery.moveToFirst();
-			return resultQuery.getString(1);
+			String imagePath = resultQuery.getString(1);
+			return imagePath;
 		}
 		
 		return null;
+	}
+	
+	public Memory searchMemory(String item) {
+		
+		//TODO: Make sure to get the raw image path when its added here.
+		
+		Cursor resultQuery = database.query(THINGS, new String[] {"_id","thing_to_remember", "photo_path"},
+				"thing_to_remember MATCH ?", new String[] {"'" + item + "'"}, null, null, null);	
+		
+		if(resultQuery.getCount() == 1) {
+			resultQuery.moveToFirst();
+			Log.d(TAG, "CURSOR STRING: "+resultQuery.getInt(0));
+			Memory mem = new Memory();
+			mem.setId(resultQuery.getInt(0));
+			mem.setItem(resultQuery.getString(1));
+			mem.setResizedImagePath(resultQuery.getString(2));
+			resultQuery.close();
+			Log.d(TAG, "Memory ob id: "+mem.getId());
+			return mem;
+		}
+		
+		
+		return null;
+	}
+	
+	public boolean removeItem(Memory mem) {
+		
+		if(mem != null) {
+			
+			int result = database.delete(THINGS, "_id = ?", new String[] {String.valueOf(mem.getId())});
+			
+			if (result == 1) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	
