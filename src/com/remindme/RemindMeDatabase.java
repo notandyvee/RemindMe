@@ -110,7 +110,7 @@ public class RemindMeDatabase {
 		
 		//TODO: Make sure to get the raw image path when its added here.
 		
-		Cursor resultQuery = database.query(THINGS, new String[] {"_id","thing_to_remember", "photo_path"},
+		Cursor resultQuery = database.query(THINGS, new String[] {"rowid","thing_to_remember", "photo_path"},
 				"thing_to_remember MATCH ?", new String[] {"'" + item + "'"}, null, null, null);	
 		
 		if(resultQuery.getCount() == 1) {
@@ -133,7 +133,7 @@ public class RemindMeDatabase {
 		
 		if(mem != null) {
 			
-			int result = database.delete(THINGS, "_id = ?", new String[] {String.valueOf(mem.getId())});
+			int result = database.delete(THINGS, "rowid = ?", new String[] {String.valueOf(mem.getId())});
 			
 			if (result == 1) {
 				return true;
@@ -161,8 +161,7 @@ public class RemindMeDatabase {
 		public void onCreate(SQLiteDatabase db) {
 			Log.d("Test", "Creating table " + THINGS);
 			String thingsToRemember = 
-					"CREATE VIRTUAL TABLE " + THINGS + " USING fts4(_id INTEGER PRIMARY KEY," +
-					"thing_to_remember text, photo_path text)";
+					"CREATE VIRTUAL TABLE " + THINGS + " USING fts4(thing_to_remember text, photo_path text)";
 			db.execSQL(thingsToRemember);
 		}
 

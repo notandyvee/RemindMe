@@ -30,12 +30,11 @@ public class ShowReminderActivity extends Activity{
 		String rememberItem = voiceResults.get(0);
 		
 		mem = db.searchMemory(rememberItem);
-		
 		Card card = new Card(this);
 		/*
 		 * Keeping it simple for now. Removed card list if multiple things of the same item are found.
 		 * This can be added later.*/
-		if (mem.getResizedImagePath() != null) {
+		if (mem != null && mem.getResizedImagePath() != null) {
 				
 			card.setFootnote(mem.getItem());
 			card.setImageLayout(ImageLayout.FULL);
