@@ -15,7 +15,6 @@ import android.util.Log;
  */
 public class RemindMeDatabase {
 
-	private static final String TAG = "RemindMeDatabase";
 	private String DB_NAME = "memories.db";
 	private int DB_VERSION = 1;
 	private RemindMeOpenHelper openHelper;
@@ -24,16 +23,27 @@ public class RemindMeDatabase {
 	/*Table Constants*/
 	private String THINGS = "things";
 	
+	/* Column constants */
+	private String ITEM = "thing_to_remember";
+	private String RAW_PHOTO = "raw_photo_path";
+	private String RESIZED_PHOTO = "resized_photo_path";
+	private String TIMELINE_CARD_ID = "timeline_card_id";
+	
+	Context context;
+	
 	public RemindMeDatabase(Context context) {
+		this.context = context;
 		openHelper = new RemindMeOpenHelper(context);
 		database = openHelper.getWritableDatabase();
 	}//end of RemindMeDatabase
 	
 	
-	public void addReminder(String itemRemember, String path) {
+	public void addReminder(String itemRemember, String rawPath, String resizedPath, long timelineId) {
 		ContentValues c = new ContentValues();
-		c.put("thing_to_remember", itemRemember);
-		c.put("photo_path", path);
+		c.put(ITEM, itemRemember);
+		c.put(RAW_PHOTO, rawPath);
+		c.put(RESIZED_PHOTO, resizedPath);
+		c.put(TIMELINE_CARD_ID, timelineId);
 		database.insert(THINGS, null, c);
 	}
 	
@@ -106,28 +116,24 @@ public class RemindMeDatabase {
 		return null;
 	}
 	
-	public Memory searchMemory(String item) {
+	/**
+	 * Method that takes a the String item to search for, and uses one of two
+	 * empty objects also sent in for setting the return value. If both of those objects
+	 * are still null afterwards, then the database returned nothing. Show appropriate method.
+	 * 
+	 * @param item String of the item to search for.
+	 * @param mem null Memory object
+	 * @param mCards null Card ArrayList
+	 * @return Nothing. If both mem and mCards is null, then absolutely nothing was returned. Database is most likely empty.
+	 */
+	public Cursor searchMemory(String item) {
 		
-		//TODO: Make sure to get the raw image path when its added here.
-		
-		Cursor resultQuery = database.query(THINGS, new String[] {"rowid","thing_to_remember", "photo_path"},
+		Cursor resultQuery = database.query(THINGS, new String[] {"rowid",ITEM, RESIZED_PHOTO, RAW_PHOTO, TIMELINE_CARD_ID},
 				"thing_to_remember MATCH ?", new String[] {"'" + item + "'"}, null, null, null);	
 		
-		if(resultQuery.getCount() == 1) {
-			resultQuery.moveToFirst();
-			Log.d(TAG, "CURSOR STRING: "+resultQuery.getInt(0));
-			Memory mem = new Memory();
-			mem.setId(resultQuery.getInt(0));
-			mem.setItem(resultQuery.getString(1));
-			mem.setResizedImagePath(resultQuery.getString(2));
-			resultQuery.close();
-			Log.d(TAG, "Memory ob id: "+mem.getId());
-			return mem;
-		}
+		return resultQuery;
 		
-		
-		return null;
-	}
+	}//end of searchMemory()
 	
 	public boolean removeItem(Memory mem) {
 		
@@ -161,7 +167,8 @@ public class RemindMeDatabase {
 		public void onCreate(SQLiteDatabase db) {
 			Log.d("Test", "Creating table " + THINGS);
 			String thingsToRemember = 
-					"CREATE VIRTUAL TABLE " + THINGS + " USING fts4(thing_to_remember text, photo_path text)";
+					"CREATE VIRTUAL TABLE " + THINGS + " USING fts4(thing_to_remember text,"
+							+ " raw_photo_path text, resized_photo_path text, timeline_card_id text)";
 			db.execSQL(thingsToRemember);
 		}
 

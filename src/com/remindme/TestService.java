@@ -24,7 +24,8 @@ public class TestService extends Service{
 	
 	private static final String TAG = "TestService";
 	private final IBinder mBinder = new LocalBinder();
-	private String finalPhotoPath;
+	private String resizedPhotoPath;
+	private String rawPhotoPath;
 	private FileObserver observer;
 	private boolean saved = false;
 	/*
@@ -55,7 +56,7 @@ public class TestService extends Service{
 		final String itemRemember = intent.getStringExtra("remember_item");
         String filePath = intent.getStringExtra("pic_file_path");
         
-        finalPhotoPath = filePath;
+        rawPhotoPath = filePath;
         filePath = filePath.substring(0, filePath.lastIndexOf("/"));
         
 		File leFile = new File(filePath);
@@ -78,10 +79,8 @@ public class TestService extends Service{
 			        	saved = true;
 			        	RemindMeDatabase db = new RemindMeDatabase(TestService.this);
 			        	
-			        	Log.d(TAG, "Added item to database successfully. \nItem: "+itemRemember+"\n PhotoPath: "+finalPhotoPath);
-			        	
 
-			        	Bitmap bitmap = BitmapFactory.decodeFile(finalPhotoPath);
+			        	Bitmap bitmap = BitmapFactory.decodeFile(rawPhotoPath);
 						bitmap = getResizedBitmap(bitmap, 640);
 						ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 						bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
@@ -91,25 +90,20 @@ public class TestService extends Service{
 						if (uri.getScheme().equals("content")) {
 							Cursor cursor = getContentResolver().query(uri, new String [] {android.provider.MediaStore.Images.ImageColumns.DATA}, null, null, null);
 							cursor.moveToFirst();
-							finalPhotoPath = cursor.getString(0);
-							uri = Uri.fromFile(new File(finalPhotoPath));
+							resizedPhotoPath = cursor.getString(0);
+							uri = Uri.fromFile(new File(resizedPhotoPath));
 							cursor.close();
-						}
-						Log.d(TAG, "Final photo path after resize and save: "+finalPhotoPath);
-						/*
-						 * WARNING:
-						 * 
-						 * The original image is currently being lost. Too lazy to upgrade database.
-						 * Restore glass and make sure to update the code to save both original image
-						 * and resized image.*/
-						db.addReminder(itemRemember, finalPhotoPath);
+						}	
 			        	
 			        	TimelineManager tm = TimelineManager.from(getApplicationContext());
 			        	Card card = new Card(getApplicationContext());
 			        	card.setText(itemRemember);
 			        	card.setImageLayout(ImageLayout.FULL);
 			        	card.addImage(uri);
-			        	tm.insert(card);
+			        	
+			        	long tId = tm.insert(card);
+			        	
+			        	db.addReminder(itemRemember, rawPhotoPath, resizedPhotoPath, tId);
 			        	
 			        	db.closeDatabase();
 			        	Log.d("SERVICE", "this.stopWatching()");
@@ -118,12 +112,17 @@ public class TestService extends Service{
 			        }
 		        }
 		    	 catch (Exception e) {
-		    		 Log.d(TAG, "Exception", e);
+		    		 Log.d(TAG, "Exception in Observer when getting back the image.", e);
 		    	 }
 		     }
 		 };
-		 observer.startWatching(); //START OBSERVING
-		
+		 new Thread(new Runnable() {	
+			@Override
+			public void run() {
+				//TODO: Move the separate thread location to the beginning of onStartCommand. Although that may not be neccessary since the bulk of the code is run while file observing.
+				observer.startWatching(); //START OBSERVING
+			}
+		}).start();		 	
 		return START_NOT_STICKY;
 	}//end of onStartCommand
 	
@@ -131,6 +130,7 @@ public class TestService extends Service{
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		Log.d(TAG, "TestService is actually being destroyed!.");
 	}//end of onDestroy
 	
 	

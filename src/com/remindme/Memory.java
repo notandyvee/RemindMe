@@ -8,10 +8,11 @@ public class Memory {
 	private int id;
 	private String item;
 	
-	//TODO: Jake, use this var to put the rawImage returned by glass.
 	private String rawImagePath;
 	
 	private String resizedImagePath;
+	
+	private String timelineId;
 
 	public String getItem() {
 		return item;
@@ -56,6 +57,14 @@ public class Memory {
 
 	public void setResizedImagePath(String resizedImagePath) {
 		this.resizedImagePath = resizedImagePath;
+	}
+
+	public String getTimelineId() {
+		return timelineId;
+	}
+
+	public void setTimelineId(String timelineId) {
+		this.timelineId = timelineId;
 	}
 	
 	
