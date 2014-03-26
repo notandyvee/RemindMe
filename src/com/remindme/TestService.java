@@ -73,7 +73,7 @@ public class TestService extends Service{
 		     @Override
 		     public void onEvent(int event, String file) {
 		    	 try {
-			        if(file != null && saved == false) {
+			        if(file != null && saved == false && event == FileObserver.ACCESS) {
 						
 			        	//Convert here 
 			        	saved = true;

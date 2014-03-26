@@ -40,6 +40,8 @@ public class RemindMeDatabase {
 	
 	public void addReminder(String itemRemember, String rawPath, String resizedPath, long timelineId) {
 		ContentValues c = new ContentValues();
+		itemRemember = minifySentence.stripSentence(itemRemember);
+		Log.d("DATABASE", itemRemember);
 		c.put(ITEM, itemRemember);
 		c.put(RAW_PHOTO, rawPath);
 		c.put(RESIZED_PHOTO, resizedPath);
@@ -125,10 +127,10 @@ public class RemindMeDatabase {
 	 * @return Nothing. If both mem and mCards is null, then absolutely nothing was returned. Database is most likely empty.
 	 */
 	public Cursor searchMemory(String item) {
-		
+		item = minifySentence.stripSentence(item);
+		Log.d("DATABASE", item);
 		Cursor resultQuery = database.query(THINGS, new String[] {"rowid",ITEM, RESIZED_PHOTO, RAW_PHOTO, TIMELINE_CARD_ID},
 				"thing_to_remember MATCH ?", new String[] {"'" + item + "'"}, null, null, null);	
-		
 		return resultQuery;
 		
 	}//end of searchMemory()
