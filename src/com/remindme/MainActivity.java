@@ -6,8 +6,6 @@ import java.util.TimerTask;
 
 import com.google.android.glass.app.Card;
 import com.google.android.glass.media.CameraManager;
-import com.google.android.glass.timeline.TimelineManager;
-
 import android.os.Bundle;
 import android.os.FileObserver;
 import android.provider.MediaStore;
@@ -40,19 +38,14 @@ public class MainActivity extends Activity {
 		rememberItem = voiceResults.get(0);
 		
 		fireReminderPicture();
-		/*
-		 * Binding to a service. Ideally I should probably do this when
-		 * the camera intent is returned.
-		 * */
-//		Intent intent = new Intent(this, TestService.class);
-//		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-		
-//		setContentView(card.toView());
+
 	}//end of onCreate
 	
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
+		
 		Log.d(TAG, "Result code is: "+resultCode);
+		
 		if(resultCode == RESULT_OK) {
 			
 			if(requestCode == RUN_CAMERA) {
@@ -61,7 +54,9 @@ public class MainActivity extends Activity {
 				db.closeDatabase();
 				
 				String filePath = data.getStringExtra(CameraManager.EXTRA_PICTURE_FILE_PATH);
-				Log.d(TAG, "Successfully got filePath: "+filePath);
+				
+				Log.d(TAG, "Successfully got filePath: "+ filePath);
+				
 				Intent intent = new Intent(this, TestService.class);
 				intent.putExtra("pic_file_path", filePath);
 				intent.putExtra("remember_item", rememberItem);
@@ -70,14 +65,10 @@ public class MainActivity extends Activity {
 				
 				Card card = new Card(this);
 				card.setText("Remembering: "+rememberItem);
-				//card.setImageLayout(Card.ImageLayout.FULL);
-
 				setContentView(card.toView());
 				
 				// Unfortunately there is no way to reliably assume we can access the image
 				// right after the photo is taken. This will be done by the service.
-
-				
 				timer = new Timer();
 				timer.schedule(new TimerTask() {
 					
@@ -111,11 +102,6 @@ public class MainActivity extends Activity {
 		Log.d("MainActivity", "onDestory is running.");
 		if(observer != null)
 			observer.stopWatching();
-//		liveCard.unpublish();
-		//unbindService(mConnection);
-		
 	}
-
-
-
+	
 }//end of class

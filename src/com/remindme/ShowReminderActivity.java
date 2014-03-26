@@ -55,16 +55,12 @@ public class ShowReminderActivity extends Activity{
 		setViews(c);
 		
 		Card card = null;
-
 		
 		if (status == 1) {
 			//Item was found so show	
 			card = memoryToCard(mem);
-		
 		}
 		else if (status == 2) {
-
-			
 			scrolly = new CardScrollView(this);
 			adapter = new MemoriesCardScrollAdapter();
 			scrolly.setAdapter(adapter);
@@ -303,9 +299,6 @@ public class ShowReminderActivity extends Activity{
 		
 		
 	}//end of inner class
-
-	
-	
 
 }//end of class
 

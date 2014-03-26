@@ -73,31 +73,29 @@ public class RemindMeDatabase {
 		
 		Cursor resultQuery = database.query(THINGS, new String[] {"thing_to_remember", "photo_path"},
 				"thing_to_remember MATCH ?", new String[] {"'" + newString + "'"}, null, null, null);
+		
 		//Should really either be 1 or 0 in size. Will worry about getting a larger set if other similar items exist.
 		//Cursor resultQuery = database.rawQuery("SELECT * FROM things WHERE thing_to_remember MATCH ?", new String[]{"'"+itemRemember+"'"});
+		
 		Log.d("Test", resultQuery.getCount() + " " + resultQuery.toString());
+		
 		if(resultQuery.getCount() > 0) {
 			resultQuery.moveToFirst();
 			String path = resultQuery.getString(1);
 			paths.add(path);
+			
 			if (resultQuery.getCount() > 1) {
+				
 				for (int i = 1; i < resultQuery.getCount(); i++) {
 					resultQuery.moveToNext();
 					path = resultQuery.getString(1);
 					paths.add(path);
 				}
+				
 			}
+			
 			return paths;
 		}
-//		else {
-//			resultQuery = database.rawQuery("SELECT * FROM things", new String[] {"'" + newString + "'"});
-//			if(resultQuery.getCount() > 0) {
-//				resultQuery.moveToFirst();
-//				String path = resultQuery.getString(1);
-//				paths.add(path);
-//				return paths;
-//			}
-//		}
 		
 		return null;
 	}
