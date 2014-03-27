@@ -1,6 +1,5 @@
 package com.remindme;
 
-import java.util.ArrayList;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -28,6 +27,8 @@ public class RemindMeDatabase {
 	private String RAW_PHOTO = "raw_photo_path";
 	private String RESIZED_PHOTO = "resized_photo_path";
 	private String TIMELINE_CARD_ID = "timeline_card_id";
+	private String ITEM_MINI = "thing_to_remember_small";
+	private String LOCATION = "lat_long";
 	
 	Context context;
 	
@@ -38,14 +39,17 @@ public class RemindMeDatabase {
 	}//end of RemindMeDatabase
 	
 	
-	public void addReminder(String itemRemember, String rawPath, String resizedPath, long timelineId) {
+	public void addReminder(String itemRemember, String rawPath, String resizedPath, long timelineId, String latLong) {
 		ContentValues c = new ContentValues();
-		itemRemember = minifySentence.stripSentence(itemRemember);
-		Log.d("DATABASE", itemRemember);
+		String itemSmall = minifySentence.stripSentence(itemRemember);
+		Log.d("DATABASE", itemSmall);
 		c.put(ITEM, itemRemember);
+		c.put(ITEM_MINI, itemSmall);
 		c.put(RAW_PHOTO, rawPath);
 		c.put(RESIZED_PHOTO, resizedPath);
 		c.put(TIMELINE_CARD_ID, timelineId);
+		c.put(LOCATION, latLong);
+		Log.d("STORING", latLong);
 		database.insert(THINGS, null, c);
 	}
 	
@@ -62,58 +66,6 @@ public class RemindMeDatabase {
 		if(database != null) {
 			database.close();
 		}
-	}	
-	
-	
-	public ArrayList<String> getItemImagePath(String itemRemember) {
-		ArrayList<String> paths = new ArrayList<String>();
-		String newString = "";
-		String arr[] = itemRemember.split(" ");
-		for (String s : arr) {
-			newString += " *" + s + "* ";
-		}
-		
-		Cursor resultQuery = database.query(THINGS, new String[] {"thing_to_remember", "photo_path"},
-				"thing_to_remember MATCH ?", new String[] {"'" + newString + "'"}, null, null, null);
-		
-		//Should really either be 1 or 0 in size. Will worry about getting a larger set if other similar items exist.
-		//Cursor resultQuery = database.rawQuery("SELECT * FROM things WHERE thing_to_remember MATCH ?", new String[]{"'"+itemRemember+"'"});
-		
-		Log.d("Test", resultQuery.getCount() + " " + resultQuery.toString());
-		
-		if(resultQuery.getCount() > 0) {
-			resultQuery.moveToFirst();
-			String path = resultQuery.getString(1);
-			paths.add(path);
-			
-			if (resultQuery.getCount() > 1) {
-				
-				for (int i = 1; i < resultQuery.getCount(); i++) {
-					resultQuery.moveToNext();
-					path = resultQuery.getString(1);
-					paths.add(path);
-				}
-				
-			}
-			
-			return paths;
-		}
-		
-		return null;
-	}
-	
-	public String getSingleItemImagePath(String itemToRemember) {
-		
-		Cursor resultQuery = database.query(THINGS, new String[] {"thing_to_remember", "photo_path"},
-				"thing_to_remember MATCH ?", new String[] {"'" + itemToRemember + "'"}, null, null, null);
-		
-		if(resultQuery.getCount() == 1) {
-			resultQuery.moveToFirst();
-			String imagePath = resultQuery.getString(1);
-			return imagePath;
-		}
-		
-		return null;
 	}
 	
 	/**
@@ -129,8 +81,8 @@ public class RemindMeDatabase {
 	public Cursor searchMemory(String item) {
 		item = minifySentence.stripSentence(item);
 		Log.d("DATABASE", item);
-		Cursor resultQuery = database.query(THINGS, new String[] {"rowid",ITEM, RESIZED_PHOTO, RAW_PHOTO, TIMELINE_CARD_ID},
-				"thing_to_remember MATCH ?", new String[] {"'" + item + "'"}, null, null, null);	
+		Cursor resultQuery = database.query(THINGS, new String[] {"rowid",ITEM, ITEM_MINI, RESIZED_PHOTO, RAW_PHOTO, TIMELINE_CARD_ID, LOCATION},
+				"thing_to_remember_small MATCH ?", new String[] {"'" + item + "'"}, null, null, null);	
 		return resultQuery;
 		
 	}//end of searchMemory()
@@ -167,8 +119,8 @@ public class RemindMeDatabase {
 		public void onCreate(SQLiteDatabase db) {
 			Log.d("Test", "Creating table " + THINGS);
 			String thingsToRemember = 
-					"CREATE VIRTUAL TABLE " + THINGS + " USING fts4(thing_to_remember text,"
-							+ " raw_photo_path text, resized_photo_path text, timeline_card_id text)";
+					"CREATE VIRTUAL TABLE " + THINGS + " USING fts4(thing_to_remember text, thing_to_remember_small," 
+							+ " raw_photo_path text, resized_photo_path text, timeline_card_id text, lat_long text)";
 			db.execSQL(thingsToRemember);
 		}
 

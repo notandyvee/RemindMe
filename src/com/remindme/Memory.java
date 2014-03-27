@@ -1,5 +1,7 @@
 package com.remindme;
 
+import android.util.Log;
+
 /*
  * Simple class that holds the info we get from the database.
  */
@@ -7,19 +9,30 @@ public class Memory {
 	
 	private int id;
 	private String item;
+	private String itemSmall;
 	
 	private String rawImagePath;
 	
 	private String resizedImagePath;
 	
 	private String timelineId;
+	
+	private String location;
 
 	public String getItem() {
 		return item;
 	}
+	
+	public String getSmallItem() { 
+		return itemSmall;
+	}
 
 	public void setItem(String item) {
 		this.item = item;
+	}
+	
+	public void setSmallItem(String itemSmall) {
+		this.itemSmall = itemSmall;
 	}
 
 	/**
@@ -65,6 +78,15 @@ public class Memory {
 
 	public void setTimelineId(String timelineId) {
 		this.timelineId = timelineId;
+	}
+	
+	public void setLocation(String location) {
+		this.location = location;
+	}
+	
+	public String getLocation() {
+		Log.d("MEMORY LOCATION RETURN", location);
+		return location;
 	}
 	
 	

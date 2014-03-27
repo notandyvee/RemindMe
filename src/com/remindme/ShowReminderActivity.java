@@ -1,6 +1,8 @@
 package com.remindme;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
 import com.google.android.glass.app.Card;
@@ -33,6 +35,7 @@ public class ShowReminderActivity extends Activity{
 	private ArrayList<Memory> mMemories;
 	MemoriesCardScrollAdapter adapter;
 	CardScrollView scrolly;
+	private String rememberItem;
 	/*
 	 * 0 = None
 	 * 1 = Found item
@@ -43,12 +46,10 @@ public class ShowReminderActivity extends Activity{
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
 		db = new RemindMeDatabase(this);
 		ArrayList<String> voiceResults = getIntent().getExtras()
 		        .getStringArrayList(RecognizerIntent.EXTRA_RESULTS);
-		String rememberItem = voiceResults.get(0);
-		
+		rememberItem = voiceResults.get(0);
 		Cursor c = db.searchMemory(rememberItem);
 		
 		//setViews is below. Does all initialization.
@@ -88,6 +89,8 @@ public class ShowReminderActivity extends Activity{
 		//setContentView(mem != null ? card.toView() : scrolly);
 		setContentView(status == 2 ? scrolly : card.toView());
 		
+		
+		
 	}//end of onCreate
     
     
@@ -107,14 +110,57 @@ public class ShowReminderActivity extends Activity{
             case R.id.show_reminder_settings:
             	if(status == 1) {
             		deleteItemResources(mem);
+            		Log.d("delete", "status 1");
             	}
             	else if(status == 2) {
-            		deleteItemResources(mMemories.get(adapter.currentSelectedPosition));
             		mCards.remove(adapter.currentSelectedPosition);
-            		mMemories.remove(adapter.currentSelectedPosition);
             		adapter.notifyDataSetChanged();
+            		deleteItemResources(mMemories.get(adapter.currentSelectedPosition));
+            		mMemories.remove(adapter.currentSelectedPosition);
             	}
             	
+                return true;
+		case R.id.show_reminder_map:
+            	//get map
+			String location = null;
+			if(status == 1) {
+				location = mem.getLocation();
+        	}
+        	else if(status == 2) {
+        		location = mMemories.get(adapter.currentSelectedPosition).getLocation();
+        	}
+            	
+        	if(location != null) {
+        		String[] latLong = location.split(",");
+            	String lat = latLong[0];
+            	String longitude = latLong[1];
+            	Log.d("got LOC??????", lat +"," + longitude);
+            	
+            	String raw;
+				try {
+					raw = "https://maps.googleapis.com/maps/api/staticmap?sensor=false&size=" + "100" + "x" + "100" +
+					        "&style=feature:all|element:all|saturation:-100|lightness:-25|gamma:0.5|visibility:simplified" +
+					        "&style=feature:roads|element:geometry&style=feature:landscape|element:geometry|lightness:-25" +
+					        "&markers=icon:" + URLEncoder.encode("http://mirror-api.appspot.com/glass/images/map_dot.png",
+					        "UTF-8") + "|shadow:false|" + lat + "," + "" + longitude +"&markers=color:0xF7594A|" + lat + "," + longitude;
+					raw =  raw.replace("|", "%7C");
+				} catch (UnsupportedEncodingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+                
+            	
+            	
+            	
+            	Card yupCard = new Card(getApplicationContext());
+        		yupCard.setText("Location " + lat +"," + longitude);
+        		setContentView(yupCard.toView());
+        	}
+        	else {
+        		Card nopeCard = new Card(getApplicationContext());
+        		nopeCard.setText("Location for this item is unavailable.");
+        		setContentView(nopeCard.toView());
+        	}
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -170,7 +216,7 @@ public class ShowReminderActivity extends Activity{
 		catch(Exception e) {
 			Log.e(TAG, "Oh no! Error occurred when trying to delete images! \n", e);
 		}
-
+		
     	this.finish();
     }//end of deleteItemResources
     
@@ -247,9 +293,13 @@ public class ShowReminderActivity extends Activity{
 		
 		memory.setId(resultQuery.getInt(0));
 		memory.setItem(resultQuery.getString(1));
-		memory.setResizedImagePath(resultQuery.getString(2));
-		memory.setRawImagePath(resultQuery.getString(3));
-		memory.setTimelineId(resultQuery.getString(4));
+		memory.setSmallItem(resultQuery.getString(2));
+		memory.setResizedImagePath(resultQuery.getString(3));
+		memory.setRawImagePath(resultQuery.getString(4));
+		memory.setTimelineId(resultQuery.getString(5));
+		memory.setLocation(resultQuery.getString(6));
+		
+		
 		
 		return memory;
 	}

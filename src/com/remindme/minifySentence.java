@@ -2,9 +2,9 @@ package com.remindme;
 
 import android.annotation.SuppressLint;
 
-@SuppressLint("DefaultLocale")
 public class minifySentence {
 	
+	@SuppressLint("DefaultLocale")
 	public static String stripSentence(String sentence) {
 		//TODO Something else. This probably is the worst way to do this.
 		
@@ -13,6 +13,7 @@ public class minifySentence {
 		sentence = sentence.replaceAll("\\bthe\\b" + 
 		"|\\bthis\\b" + 
 		"|\\bwas\\b" + 
+		"|\\bare\\b" + 
 		"|\\bput\\b" + 
 		"|\\ba\\b" + 
 		"|\\ban\\b" + 
@@ -67,9 +68,9 @@ public class minifySentence {
 		"|\\bnew\\b" + 
 		"|\\bvery\\b" + 
 		"|\\bhow\\b" + 
-		"|\\bwhen\\b" + 
-		"|\\bfind\\b"+ 
-		"", "");
+		"|\\bwhen\\b" +
+		"|\\bwhere's\\b" +
+		"|\\bfind\\b", "");
 
 		
 		String newSentence = "";

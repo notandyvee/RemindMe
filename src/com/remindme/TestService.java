@@ -55,7 +55,8 @@ public class TestService extends Service{
 		
 		final String itemRemember = intent.getStringExtra("remember_item");
         String filePath = intent.getStringExtra("pic_file_path");
-        
+        final String latLong = intent.getStringExtra("location");
+        Log.d("LOCATION", latLong);
         rawPhotoPath = filePath;
         filePath = filePath.substring(0, filePath.lastIndexOf("/"));
         
@@ -103,7 +104,7 @@ public class TestService extends Service{
 			        	
 			        	long tId = tm.insert(card);
 			        	
-			        	db.addReminder(itemRemember, rawPhotoPath, resizedPhotoPath, tId);
+			        	db.addReminder(itemRemember, rawPhotoPath, resizedPhotoPath, tId, latLong);
 			        	
 			        	db.closeDatabase();
 			        	Log.d("SERVICE", "this.stopWatching()");

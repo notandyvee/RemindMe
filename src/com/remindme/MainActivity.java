@@ -1,15 +1,23 @@
 package com.remindme;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import com.google.android.glass.app.Card;
 import com.google.android.glass.media.CameraManager;
+
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.FileObserver;
 import android.provider.MediaStore;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.speech.RecognizerIntent;
 import android.util.Log;
@@ -60,6 +68,7 @@ public class MainActivity extends Activity {
 				Intent intent = new Intent(this, TestService.class);
 				intent.putExtra("pic_file_path", filePath);
 				intent.putExtra("remember_item", rememberItem);
+				intent.putExtra("location", getLastLocation(this).getLatitude() + ", " + getLastLocation(this).getLongitude());
 				startService(intent);
 				
 				
@@ -103,5 +112,28 @@ public class MainActivity extends Activity {
 		if(observer != null)
 			observer.stopWatching();
 	}
+	
+	public static Location getLastLocation(Context context) {
+	      LocationManager manager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+	      Criteria criteria = new Criteria();
+	      criteria.setAccuracy(Criteria.NO_REQUIREMENT);
+	      List<String> providers = manager.getProviders(criteria, true);
+	      List<Location> locations = new ArrayList<Location>();
+	      for (String provider : providers) {
+	           Location location = manager.getLastKnownLocation(provider);
+	           if (location != null && location.getAccuracy() != 0.0) {
+	               locations.add(location);
+	           }
+	      }
+	      Collections.sort(locations, new Comparator<Location>() {
+	          public int compare(Location location, Location location2) {
+	              return (int) (location.getAccuracy() - location2.getAccuracy());
+	          }
+	      });
+	      if (locations.size() > 0) {
+	          return locations.get(0);
+	      }
+	      return null;
+	 }
 	
 }//end of class

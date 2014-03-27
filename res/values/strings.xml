@@ -4,6 +4,7 @@
     <string name="app_name">PhotoGlassic Memory</string>
     <string name="action_settings">Settings</string>
     <string name="show_reminder_menu">Delete</string>
+    <string name="show_reminder_map">Show Location</string>
     
     <string name="remind_me_voice_trigger">remember</string>
     <string name="remind_me_voice_prompt">i.e where I put...</string>

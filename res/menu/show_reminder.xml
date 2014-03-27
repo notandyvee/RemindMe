@@ -8,4 +8,11 @@
         android:title="@string/show_reminder_menu"
         android:icon="@drawable/ic_delete_50" />
     
+    <item
+        android:id="@+id/show_reminder_map"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/show_reminder_map"
+        android:icon="@drawable/ic_compass_50" />
+    
     </menu>
