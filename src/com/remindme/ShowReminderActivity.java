@@ -1,9 +1,14 @@
 package com.remindme;
 
 import java.io.File;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 import com.google.android.glass.app.Card;
 import com.google.android.glass.app.Card.ImageLayout;
@@ -13,7 +18,10 @@ import com.google.android.glass.widget.CardScrollView;
 
 import android.app.Activity;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.util.Log;
@@ -25,6 +33,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ImageView;
 
 public class ShowReminderActivity extends Activity{
 	
@@ -36,17 +45,41 @@ public class ShowReminderActivity extends Activity{
 	MemoriesCardScrollAdapter adapter;
 	CardScrollView scrolly;
 	private String rememberItem;
+	private View currentView;
 	/*
 	 * 0 = None
 	 * 1 = Found item
 	 * 2 = More than 1 item
 	 * */
 	private int status = 0;
-
+	private ImageView mMapView;
+	private static final int ZOOM = 17;
+	private Card card;
+	private static final String STATIC_MAP_URL_TEMPLATE =
+            "https://maps.googleapis.com/maps/api/staticmap"
+            + "?center=%.5f,%.5f"
+            + "&zoom=%d"
+            + "&sensor=true"
+            + "&size=640x360"
+            + "&scale=1"
+            + "&style=element:geometry%%7Cinvert_lightness:true"
+            + "&style=feature:landscape.natural.terrain%%7Celement:geometry%%7Cvisibility:on"
+            + "&style=feature:landscape%%7Celement:geometry.fill%%7Ccolor:0x303030"
+            + "&style=feature:poi%%7Celement:geometry.fill%%7Ccolor:0x404040"
+            + "&style=feature:poi.park%%7Celement:geometry.fill%%7Ccolor:0x0a330a"
+            + "&style=feature:water%%7Celement:geometry%%7Ccolor:0x00003a"
+            + "&style=feature:transit%%7Celement:geometry%%7Cvisibility:on%%7Ccolor:0x101010"
+            + "&style=feature:road%%7Celement:geometry.stroke%%7Cvisibility:on"
+            + "&style=feature:road.local%%7Celement:geometry.fill%%7Ccolor:0x606060"
+            + "&style=feature:road.arterial%%7Celement:geometry.fill%%7Ccolor:0x888888";
+	
+	
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		db = new RemindMeDatabase(this);
+		mMapView = new ImageView(this);
 		ArrayList<String> voiceResults = getIntent().getExtras()
 		        .getStringArrayList(RecognizerIntent.EXTRA_RESULTS);
 		rememberItem = voiceResults.get(0);
@@ -55,7 +88,7 @@ public class ShowReminderActivity extends Activity{
 		//setViews is below. Does all initialization.
 		setViews(c);
 		
-		Card card = null;
+		card = null;
 		
 		if (status == 1) {
 			//Item was found so show	
@@ -88,7 +121,7 @@ public class ShowReminderActivity extends Activity{
 		
 		//setContentView(mem != null ? card.toView() : scrolly);
 		setContentView(status == 2 ? scrolly : card.toView());
-		
+		currentView = status == 2 ? scrolly : card.toView();
 		
 		
 	}//end of onCreate
@@ -134,32 +167,15 @@ public class ShowReminderActivity extends Activity{
         		String[] latLong = location.split(",");
             	String lat = latLong[0];
             	String longitude = latLong[1];
-            	Log.d("got LOC??????", lat +"," + longitude);
-            	
-            	String raw;
-				try {
-					raw = "https://maps.googleapis.com/maps/api/staticmap?sensor=false&size=" + "100" + "x" + "100" +
-					        "&style=feature:all|element:all|saturation:-100|lightness:-25|gamma:0.5|visibility:simplified" +
-					        "&style=feature:roads|element:geometry&style=feature:landscape|element:geometry|lightness:-25" +
-					        "&markers=icon:" + URLEncoder.encode("http://mirror-api.appspot.com/glass/images/map_dot.png",
-					        "UTF-8") + "|shadow:false|" + lat + "," + "" + longitude +"&markers=color:0xF7594A|" + lat + "," + longitude;
-					raw =  raw.replace("|", "%7C");
-				} catch (UnsupportedEncodingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-                
-            	
-            	
-            	
-            	Card yupCard = new Card(getApplicationContext());
-        		yupCard.setText("Location " + lat +"," + longitude);
-        		setContentView(yupCard.toView());
+        		setContentView(mMapView);
+        		currentView = mMapView;
+        		loadMap(lat, longitude, ZOOM);
         	}
         	else {
         		Card nopeCard = new Card(getApplicationContext());
         		nopeCard.setText("Location for this item is unavailable.");
         		setContentView(nopeCard.toView());
+        		currentView = mMapView;
         	}
                 return true;
             default:
@@ -217,7 +233,12 @@ public class ShowReminderActivity extends Activity{
 			Log.e(TAG, "Oh no! Error occurred when trying to delete images! \n", e);
 		}
 		
-    	this.finish();
+    	if (currentView.equals(scrolly) && mMemories.size() > 1) {
+    		setContentView(scrolly);
+    	}
+    	else {
+    		this.finish();
+    	}
     }//end of deleteItemResources
     
     
@@ -227,11 +248,25 @@ public class ShowReminderActivity extends Activity{
         if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
         	
         	if (status != 0) {
+        		if (mMapView.equals(currentView)) {
+        			return true;
+        		}
         		openOptionsMenu();
         		return true;
         	}
         } 
         else if (keyCode == KeyEvent.KEYCODE_BACK) {
+        	if (mMapView.equals(currentView)) {
+        		if (scrolly != null) {
+        			setContentView(scrolly);
+        			currentView = scrolly;
+        		}
+        		else {
+        			setContentView(card.toView());
+        			currentView = card.toView();
+        		}
+        		return true;
+			}
         	return super.onKeyDown(keyCode, event);
         }
         return false;
@@ -299,8 +334,6 @@ public class ShowReminderActivity extends Activity{
 		memory.setTimelineId(resultQuery.getString(5));
 		memory.setLocation(resultQuery.getString(6));
 		
-		
-		
 		return memory;
 	}
 	
@@ -315,6 +348,42 @@ public class ShowReminderActivity extends Activity{
 		return card;
 	}
 	
+	
+	private static String makeStaticMapsUrl(String latitude, String longitude, int zoom) {
+		try {
+			return String.format(STATIC_MAP_URL_TEMPLATE, Double.parseDouble(latitude), Double.parseDouble(longitude), zoom)
+			        + "&markers=icon:" + URLEncoder.encode("http://mirror-api.appspot.com/glass/images/map_dot.png",
+			            "UTF-8") + "%7Cshadow:false%7C" + latitude + "," + "" + longitude.substring(1) + "&markers=color:0xF7594A%7C" + latitude + "," + longitude.substring(1);
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        return String.format(STATIC_MAP_URL_TEMPLATE, Double.parseDouble(latitude), Double.parseDouble(longitude), zoom);
+    }
+	
+	private void loadMap(String latitude, String longitude, int zoom) {
+        String url = makeStaticMapsUrl(latitude, longitude, zoom);
+        new AsyncTask<String, Void, Bitmap>() {
+            @Override
+            protected Bitmap doInBackground(String... urls) {
+                try {
+                    HttpResponse response = new DefaultHttpClient().execute(new HttpGet(urls[0]));
+                    InputStream is = response.getEntity().getContent();
+                    return BitmapFactory.decodeStream(is);
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to load image", e);
+                    return null;
+                }
+            }
+
+            @Override
+            protected void onPostExecute(Bitmap bitmap) {
+                if (bitmap != null) {
+                    mMapView.setImageBitmap(bitmap);
+                }
+            }
+        }.execute(url);
+	}
 	
 	
 	private class MemoriesCardScrollAdapter extends CardScrollAdapter {
