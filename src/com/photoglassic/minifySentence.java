@@ -1,8 +1,9 @@
-package com.remindme;
+package com.photoglassic;
 
 import android.annotation.SuppressLint;
 
 public class minifySentence {
+	
 	
 	@SuppressLint("DefaultLocale")
 	public static String stripSentence(String sentence) {

@@ -1,4 +1,4 @@
-package com.remindme;
+package com.photoglassic;
 
 import android.util.Log;
 
