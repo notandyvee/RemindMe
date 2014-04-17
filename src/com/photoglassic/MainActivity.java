@@ -1,4 +1,4 @@
-package com.remindme;
+package com.photoglassic;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,6 +9,7 @@ import java.util.TimerTask;
 
 import com.google.android.glass.app.Card;
 import com.google.android.glass.media.CameraManager;
+import com.remindme.R;
 
 import android.location.Criteria;
 import android.location.Location;
@@ -74,8 +75,8 @@ public class MainActivity extends Activity {
 				
 				Card card = new Card(this);
 				card.setText("Remembering: "+rememberItem);
-				setContentView(card.toView());
-				
+				setContentView(card.getView());
+
 				// Unfortunately there is no way to reliably assume we can access the image
 				// right after the photo is taken. This will be done by the service.
 				timer = new Timer();

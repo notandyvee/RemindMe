@@ -1,11 +1,7 @@
-package com.remindme;
+package com.photoglassic;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-
-import com.google.android.glass.app.Card;
-import com.google.android.glass.app.Card.ImageLayout;
-import com.google.android.glass.timeline.TimelineManager;
 
 import android.app.Service;
 import android.content.Intent;
@@ -96,15 +92,16 @@ public class TestService extends Service{
 							cursor.close();
 						}	
 			        	
-			        	TimelineManager tm = TimelineManager.from(getApplicationContext());
-			        	Card card = new Card(getApplicationContext());
-			        	card.setText(itemRemember);
-			        	card.setImageLayout(ImageLayout.FULL);
-			        	card.addImage(uri);
+//			        	TimelineManager tm = TimelineManager.from(getApplicationContext());
+//			        	Card card = new Card(getApplicationContext());
+//			        	card.setText(itemRemember);
+//			        	card.setImageLayout(ImageLayout.FULL);
+//			        	card.addImage(uri);
+//			        	
+//			        	
+//			        	long tId = tm.insert(card);
 			        	
-			        	long tId = tm.insert(card);
-			        	
-			        	db.addReminder(itemRemember, rawPhotoPath, resizedPhotoPath, tId, latLong);
+			        	db.addReminder(itemRemember, rawPhotoPath, resizedPhotoPath, 0, latLong);
 			        	
 			        	db.closeDatabase();
 			        	Log.d("SERVICE", "this.stopWatching()");

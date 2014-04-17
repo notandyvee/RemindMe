@@ -1,4 +1,4 @@
-package com.remindme;
+package com.photoglassic;
 
 import java.io.File;
 import java.io.InputStream;
@@ -12,15 +12,14 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 import com.google.android.glass.app.Card;
 import com.google.android.glass.app.Card.ImageLayout;
-import com.google.android.glass.timeline.TimelineManager;
 import com.google.android.glass.widget.CardScrollAdapter;
 import com.google.android.glass.widget.CardScrollView;
+import com.remindme.R;
 
 import android.app.Activity;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
@@ -120,8 +119,8 @@ public class ShowReminderActivity extends Activity{
 		}
 		
 		//setContentView(mem != null ? card.toView() : scrolly);
-		setContentView(status == 2 ? scrolly : card.toView());
-		currentView = status == 2 ? scrolly : card.toView();
+		setContentView(status == 2 ? scrolly : card.getView());
+		currentView = status == 2 ? scrolly : card.getView();
 		
 		
 	}//end of onCreate
@@ -174,7 +173,7 @@ public class ShowReminderActivity extends Activity{
         	else {
         		Card nopeCard = new Card(getApplicationContext());
         		nopeCard.setText("Location for this item is unavailable.");
-        		setContentView(nopeCard.toView());
+        		setContentView(nopeCard.getView());
         		currentView = mMapView;
         	}
                 return true;
@@ -192,8 +191,8 @@ public class ShowReminderActivity extends Activity{
     	//Should we delete images first before removing it from the database?
     	boolean result = db.removeItem(memory);
     	
-    	TimelineManager man = TimelineManager.from(this);
-    	boolean staticCardRemoveResult = man.delete(Long.parseLong(memory.getTimelineId()));
+    	//TimelineManager man = TimelineManager.from(this);
+    	//boolean staticCardRemoveResult = man.delete(Long.parseLong(memory.getTimelineId()));
     	
     	if(result) {
     		Log.d(TAG, "Successfully deleted row");
@@ -201,11 +200,11 @@ public class ShowReminderActivity extends Activity{
     		Log.d(TAG, "Failed to delete item");
     	}
     	
-    	if(staticCardRemoveResult) {
-    		Log.d(TAG, "Successfully removed item from timeline.");
-    	} else {
-    		Log.d(TAG, "Failed to remove static timeline card.");
-    	}
+//    	if(staticCardRemoveResult) {
+//    		Log.d(TAG, "Successfully removed item from timeline.");
+//    	} else {
+//    		Log.d(TAG, "Failed to remove static timeline card.");
+//    	}
 
 		try {
 			
@@ -262,8 +261,8 @@ public class ShowReminderActivity extends Activity{
         			currentView = scrolly;
         		}
         		else {
-        			setContentView(card.toView());
-        			currentView = card.toView();
+        			setContentView(card.getView());
+        			currentView = card.getView();
         		}
         		return true;
 			}
@@ -342,8 +341,8 @@ public class ShowReminderActivity extends Activity{
 		
 		card.setFootnote(memory.getItem());
 		card.setImageLayout(ImageLayout.FULL);
-		Uri uri = Uri.fromFile(new File(memory.getResizedImagePath()));
-		card.addImage(uri);
+		//Uri uri = Uri.fromFile(new File(memory.getResizedImagePath()));
+		card.addImage(BitmapFactory.decodeFile(memory.getResizedImagePath()));
 		
 		return card;
 	}
@@ -353,7 +352,7 @@ public class ShowReminderActivity extends Activity{
 		try {
 			return String.format(STATIC_MAP_URL_TEMPLATE, Double.parseDouble(latitude), Double.parseDouble(longitude), zoom)
 			        + "&markers=icon:" + URLEncoder.encode("http://mirror-api.appspot.com/glass/images/map_dot.png",
-			            "UTF-8") + "%7Cshadow:false%7C" + latitude + "," + "" + longitude.substring(1) + "&markers=color:0xF7594A%7C" + latitude + "," + longitude.substring(1);
+			            "UTF-8") + "%7Cshadow:false%7C" + latitude + "," + "" + longitude.substring(1);
 		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -390,16 +389,6 @@ public class ShowReminderActivity extends Activity{
 		
 		//Integer used by Scroll Adapter's onlick listener  to tell which once is currently selected
 		public int currentSelectedPosition;
-		
-		@Override
-		public int findIdPosition(Object ob) {
-			return -1;
-		}
-
-		@Override
-		public int findItemPosition(Object ob) {
-			return mCards.indexOf(ob);
-		}
 
 		@Override
 		public int getCount() {
@@ -413,7 +402,12 @@ public class ShowReminderActivity extends Activity{
 
 		@Override
 		public View getView(int pos, View arg1, ViewGroup arg2) {
-			return mCards.get(pos).toView();
+			return mCards.get(pos).getView();
+		}
+
+		@Override
+		public int getPosition(Object ob) {
+			return mCards.indexOf(ob);
 		}
 		
 		

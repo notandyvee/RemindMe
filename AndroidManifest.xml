@@ -14,14 +14,15 @@
  	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
  	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
  	<uses-permission android:name="android.permission.INTERNET"/>
+ 	<uses-permission android:name="com.google.android.glass.permission.DEVELOPMENT" />
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name" >
-        <service android:name=".TestService" />
+        <service android:name="com.photoglassic.TestService" />
         <activity
-            android:name="com.remindme.MainActivity"
+            android:name="com.photoglassic.MainActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="com.google.android.glass.action.VOICE_TRIGGER" />
@@ -30,7 +31,7 @@
             android:resource="@xml/where_i_put" />
         </activity>
         <activity
-            android:name="com.remindme.ShowReminderActivity"
+            android:name="com.photoglassic.ShowReminderActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="com.google.android.glass.action.VOICE_TRIGGER" />
