@@ -26,7 +26,6 @@ public class RemindMeDatabase {
 	private String ITEM = "thing_to_remember";
 	private String RAW_PHOTO = "raw_photo_path";
 	private String RESIZED_PHOTO = "resized_photo_path";
-	private String TIMELINE_CARD_ID = "timeline_card_id";
 	private String ITEM_MINI = "thing_to_remember_small";
 	private String LOCATION = "lat_long";
 	
@@ -39,7 +38,7 @@ public class RemindMeDatabase {
 	}//end of RemindMeDatabase
 	
 	
-	public void addReminder(String itemRemember, String rawPath, String resizedPath, long timelineId, String latLong) {
+	public void addReminder(String itemRemember, String rawPath, String resizedPath, String latLong) {
 		ContentValues c = new ContentValues();
 		String itemSmall = minifySentence.stripSentence(itemRemember);
 		Log.d("DATABASE", itemSmall);
@@ -47,7 +46,6 @@ public class RemindMeDatabase {
 		c.put(ITEM_MINI, itemSmall);
 		c.put(RAW_PHOTO, rawPath);
 		c.put(RESIZED_PHOTO, resizedPath);
-		c.put(TIMELINE_CARD_ID, timelineId);
 		c.put(LOCATION, latLong);
 		Log.d("STORING", latLong);
 		database.insert(THINGS, null, c);
@@ -81,7 +79,7 @@ public class RemindMeDatabase {
 	public Cursor searchMemory(String item) {
 		item = minifySentence.stripSentence(item);
 		Log.d("DATABASE", item);
-		Cursor resultQuery = database.query(THINGS, new String[] {"rowid",ITEM, ITEM_MINI, RESIZED_PHOTO, RAW_PHOTO, TIMELINE_CARD_ID, LOCATION},
+		Cursor resultQuery = database.query(THINGS, new String[] {"rowid",ITEM, ITEM_MINI, RESIZED_PHOTO, RAW_PHOTO, LOCATION},
 				"thing_to_remember_small MATCH ?", new String[] {"'" + item + "'"}, null, null, null);	
 		return resultQuery;
 		
@@ -120,7 +118,7 @@ public class RemindMeDatabase {
 			Log.d("Test", "Creating table " + THINGS);
 			String thingsToRemember = 
 					"CREATE VIRTUAL TABLE " + THINGS + " USING fts4(thing_to_remember text, thing_to_remember_small," 
-							+ " raw_photo_path text, resized_photo_path text, timeline_card_id text, lat_long text)";
+							+ " raw_photo_path text, resized_photo_path text, lat_long text)";
 			db.execSQL(thingsToRemember);
 		}
 
