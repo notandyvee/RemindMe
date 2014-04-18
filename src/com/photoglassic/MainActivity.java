@@ -9,7 +9,7 @@ import java.util.TimerTask;
 
 import com.google.android.glass.app.Card;
 import com.google.android.glass.media.CameraManager;
-import com.remindme.R;
+import com.photoglassic.R;
 
 import android.location.Criteria;
 import android.location.Location;
@@ -22,15 +22,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.speech.RecognizerIntent;
 import android.util.Log;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
 
 public class MainActivity extends Activity {
 	
 	private static final String TAG = "MainActivity";
 	private static final int RUN_CAMERA = 0;
-	private RelativeLayout cardParent;
-	private ImageView mImageView;
 	private String rememberItem;	
 	FileObserver observer;
 	private Timer timer;
@@ -39,9 +35,7 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		
-		cardParent = (RelativeLayout)findViewById(R.id.reminder_card_holder);
-		mImageView = (ImageView)findViewById(R.id.image_to_remember);
+
 		ArrayList<String> voiceResults = getIntent().getExtras()
 		        .getStringArrayList(RecognizerIntent.EXTRA_RESULTS);
 		rememberItem = voiceResults.get(0);

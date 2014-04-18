@@ -14,8 +14,9 @@ import com.google.android.glass.app.Card;
 import com.google.android.glass.app.Card.ImageLayout;
 import com.google.android.glass.widget.CardScrollAdapter;
 import com.google.android.glass.widget.CardScrollView;
-import com.remindme.R;
+import com.photoglassic.R;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -330,8 +331,7 @@ public class ShowReminderActivity extends Activity{
 		memory.setSmallItem(resultQuery.getString(2));
 		memory.setResizedImagePath(resultQuery.getString(3));
 		memory.setRawImagePath(resultQuery.getString(4));
-		memory.setTimelineId(resultQuery.getString(5));
-		memory.setLocation(resultQuery.getString(6));
+		memory.setLocation(resultQuery.getString(5));
 		
 		return memory;
 	}
@@ -348,6 +348,7 @@ public class ShowReminderActivity extends Activity{
 	}
 	
 	
+	@SuppressLint("DefaultLocale")
 	private static String makeStaticMapsUrl(String latitude, String longitude, int zoom) {
 		try {
 			return String.format(STATIC_MAP_URL_TEMPLATE, Double.parseDouble(latitude), Double.parseDouble(longitude), zoom)

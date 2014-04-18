@@ -71,6 +71,7 @@ public class minifySentence {
 		"|\\bhow\\b" + 
 		"|\\bwhen\\b" +
 		"|\\bwhere's\\b" +
+		"|\\bhad\\b" +
 		"|\\bfind\\b", "");
 
 		

@@ -101,7 +101,7 @@ public class TestService extends Service{
 //			        	
 //			        	long tId = tm.insert(card);
 			        	
-			        	db.addReminder(itemRemember, rawPhotoPath, resizedPhotoPath, 0, latLong);
+			        	db.addReminder(itemRemember, rawPhotoPath, resizedPhotoPath, latLong);
 			        	
 			        	db.closeDatabase();
 			        	Log.d("SERVICE", "this.stopWatching()");

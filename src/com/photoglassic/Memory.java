@@ -15,8 +15,6 @@ public class Memory {
 	
 	private String resizedImagePath;
 	
-	private String timelineId;
-	
 	private String location;
 
 	public String getItem() {
@@ -70,14 +68,6 @@ public class Memory {
 
 	public void setResizedImagePath(String resizedImagePath) {
 		this.resizedImagePath = resizedImagePath;
-	}
-
-	public String getTimelineId() {
-		return timelineId;
-	}
-
-	public void setTimelineId(String timelineId) {
-		this.timelineId = timelineId;
 	}
 	
 	public void setLocation(String location) {
